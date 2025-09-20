@@ -1,0 +1,19 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/info-widgets/
+
+# widgets.yaml
+
+- logo:
+    icon: /images/logo.svg
+
+- resources:
+    cpu: true
+    memory: true
+    disk: /mnt/hdd500
+
+- openmeteo:
+    latitude: YOUR_LATITUDE    # e.g. 28.6692 for New Delhi
+    longitude: YOUR_LONGITUDE  # e.g. 77.4538 for New Delhi  
+    timezone: YOUR_TIMEZONE    # e.g. Asia/Kolkata
+    units: metric

@@ -1,0 +1,264 @@
+# Docker Compose for a full media stack including Jellyfin, *arr stack, and download clients.
+# All services are on a dedicated network and use a single .env file for configuration.
+
+networks:
+  media-network:
+    name: media-network
+    ipam:
+      config:
+        - subnet: 172.39.0.0/24
+
+services:
+  ###########################################################################
+  # Media Streaming
+  ###########################################################################
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - JELLYFIN_PublishedServerUrl=http://<JELLYFIN_IP_OR_DOMAIN>
+    volumes:
+      - ./jellyfin/config:/config
+      - /data:/data:ro # Mount media library as read-only
+    devices:
+      - /dev/dri:/dev/dri # For Intel QuickSync hardware transcoding
+    ports:
+      - "8096:8096"
+      - "7359:7359/udp"
+      - "1900:1900/udp"
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.5
+    restart: unless-stopped
+
+  navidrome:
+    image: deluan/navidrome:latest
+    container_name: navidrome
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - ND_SCANSCHEDULE=1h
+      - ND_LOGLEVEL=info
+    volumes:
+      - ./navidrome/config:/data
+      - /data/music:/music:ro
+    ports:
+      - "4533:4533"
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.6
+    restart: unless-stopped
+
+  ###########################################################################
+  # Requests, Stats, and Subtitles
+  ###########################################################################
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./jellyseerr/config:/app/config
+    ports:
+      - "5055:5055"
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.9
+    restart: unless-stopped
+
+  jellystat-db:
+    image: postgres:15
+    container_name: jellystat-db
+    environment:
+      - POSTGRES_USER=${JELLYSTAT_DB_USER}
+      - POSTGRES_PASSWORD=${JELLYSTAT_DB_PASS}
+    volumes:
+      - ./jellystat/postgres:/var/lib/postgresql/data
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.7
+    restart: unless-stopped
+
+  jellystat:
+    image: cyfershepard/jellystat:latest
+    container_name: jellystat
+    environment:
+      - POSTGRES_USER=${JELLYSTAT_DB_USER}
+      - POSTGRES_PASSWORD=${JELLYSTAT_DB_PASS}
+      - POSTGRES_IP=jellystat-db
+      - JWT_SECRET=${JELLYSTAT_JWT_SECRET}
+      - TZ=${TZ}
+    volumes:
+      - ./jellystat/backup:/app/backend/backup-data
+    ports:
+      - "3000:3000"
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.8
+    depends_on:
+      - jellystat-db
+    restart: unless-stopped
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./bazarr/config:/config
+      - /data:/data:ro
+    ports:
+      - "6767:6767"
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.15
+    restart: unless-stopped
+
+  ###########################################################################
+  # Download Clients
+  ###########################################################################
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - WEBUI_PORT=8080
+    volumes:
+      - ./qbittorrent/config:/config
+      - /data:/data # Downloads and library are on the same mount
+    ports:
+      - "8080:8080"
+      - "6881:6881"
+      - "6881:6881/udp"
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.10
+    restart: unless-stopped
+
+  slskd:
+    image: ghcr.io/slskd/slskd:latest
+    container_name: slskd
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./slskd/config:/app/slskd.yml
+      - /data/downloads:/downloads
+      - /data/music:/music:ro
+    ports:
+      - "5030:5030"
+      - "51300:51300"
+      - "51300:51300/udp"
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.22
+    restart: unless-stopped
+
+  ###########################################################################
+  # *arr Suite & Indexers
+  ###########################################################################
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./prowlarr/config:/config
+    ports:
+      - "9696:9696"
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.11
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./sonarr/config:/config
+      - /data:/data
+    ports:
+      - "8989:8989"
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.12
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./radarr/config:/config
+      - /data:/data
+    ports:
+      - "7878:7878"
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.13
+    restart: unless-stopped
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./lidarr/config:/config
+      - /data:/data
+    ports:
+      - "8686:8686"
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.14
+    restart: unless-stopped
+
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./jackett/config:/config
+      - /data/downloads:/downloads
+    ports:
+      - "9117:9117"
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.16
+    restart: unless-stopped
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=info
+      - TZ=${TZ}
+    ports:
+      - "8191:8191"
+    networks:
+      media-network:
+        ipv4_address: 172.39.0.17
+    restart: unless-stopped

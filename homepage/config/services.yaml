@@ -1,0 +1,205 @@
+# services.yaml
+
+- Core Services:
+    - Proxmox:
+        icon: proxmox.svg
+        href: https://YOUR_PROXMOX_IP:8006/
+        description: Server Virtualization
+        widget:
+          type: proxmox
+          url: https://YOUR_PROXMOX_IP:8006
+          username: homepage@pam!widget
+          password: your_proxmox_api_token
+    - Beszel:
+        icon: mdi-chart-line
+        href: http://YOUR_BESZEL_IP:8090
+        description: Proxmox Monitoring
+        widget:
+          type: beszel
+          url: http://YOUR_BESZEL_IP:8090
+          username: "{{HOMEPAGE_VAR_BESZEL_USER}}"
+          password: "{{HOMEPAGE_VAR_BESZEL_PASS}}"
+          version: 2
+    - "HDD Pool":
+        icon: mdi-folder-network
+        href: smb://YOUR_SAMBA_IP
+        description: Samba Share
+        ping: YOUR_SAMBA_IP
+
+- Cloud Storage:
+    - Nextcloud:
+        icon: nextcloud.svg
+        href: https://nextcloud.yourdomain.com
+        description: Private Cloud Storage
+        ping: https://nextcloud.yourdomain.com
+        widget:
+          type: nextcloud
+          url: https://nextcloud.yourdomain.com
+          key: "{{HOMEPAGE_VAR_NEXTCLOUD_KEY}}"
+          fields:
+            - freespace
+            - activeusers
+            - numfiles
+            - numshares
+    - Immich:
+        icon: immich.svg
+        href: https://photos.yourdomain.com
+        description: Photo Backup
+        ping: https://photos.yourdomain.com
+        widget:
+          type: immich
+          url: https://photos.yourdomain.com
+          key: "{{HOMEPAGE_VAR_IMMICH_KEY}}"
+          version: 2
+
+- Networking:
+    - Pi-hole:
+        icon: pi-hole.svg
+        href: http://pi-hole/admin/
+        description: Ad-blocker
+        widget:
+          type: pihole
+          url: http://YOUR_PIHOLE_IP
+          version: 6
+          key: "{{HOMEPAGE_VAR_PIHOLE_KEY}}"
+    - Tailscale:
+        icon: tailscale.svg
+        href: https://login.tailscale.com/admin/machines
+        description: VPN Status
+        widget:
+          type: tailscale
+          deviceid: your_tailscale_device_id
+          key: "{{HOMEPAGE_VAR_TAILSCALE_KEY}}"
+    - "Speedtest Tracker":
+        icon: mdi-speedometer
+        href: https://speedtest.yourdomain.com
+        description: Speed Monitoring
+        ping: https://speedtest.yourdomain.com
+        widget:
+          type: speedtest
+          url: https://speedtest.yourdomain.com
+          version: 1
+    - "Nginx Proxy Manager":
+        icon: nginx-proxy-manager.svg
+        href: http://YOUR_NPM_IP:8181
+        description: Reverse Proxy
+        widget:
+          type: npm
+          url: http://YOUR_NPM_IP:8181
+          username: "{{HOMEPAGE_VAR_NPM_USER}}"
+          password: "{{HOMEPAGE_VAR_NPM_PASS}}"
+          fields: ["enabled", "disabled", "total"]
+    - Cloudflared:
+        icon: cloudflare.svg
+        href: https://one.dash.cloudflare.com/your_account_id/
+        description: Secure Tunneling
+        widget:
+          type: cloudflared
+          accountid: your_cloudflare_account_id
+          tunnelid: your_cloudflare_tunnel_id
+          key: "{{HOMEPAGE_VAR_CLOUDFLARE_KEY}}"
+          fields: ["status", "origin_ip"]
+
+- Media Platform:
+    - Jellyfin:
+        icon: jellyfin.svg
+        href: https://jellyfin.yourdomain.com
+        ping: https://jellyfin.yourdomain.com
+        widget:
+          type: jellyfin
+          url: https://jellyfin.yourdomain.com
+          key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
+          enableBlocks: true
+    - Jellyseerr:
+        icon: jellyseerr.svg
+        href: https://jellyseerr.yourdomain.com
+        ping: https://jellyseerr.yourdomain.com
+        widget:
+          type: jellyseerr
+          url: https://jellyseerr.yourdomain.com
+          key: "{{HOMEPAGE_VAR_JELLYSEERR_KEY}}"
+    - Navidrome:
+        icon: navidrome.svg
+        href: https://music.yourdomain.com
+        description: Your Music Jukebox
+        ping: https://music.yourdomain.com
+        widget:
+          type: navidrome
+          url: https://music.yourdomain.com
+          user: your_navidrome_username
+          salt: your_navidrome_salt
+          token: your_navidrome_token
+    - Jellystat:
+        icon: mdi-chart-bar
+        href: http://YOUR_MEDIA_SERVER_IP:3000
+        description: Jellyfin Statistics
+        widget:
+          type: jellystat
+          url: http://YOUR_MEDIA_SERVER_IP:3000
+          key: "{{HOMEPAGE_VAR_JELLYSTAT_KEY}}"
+
+- Media Automation:
+    - Radarr:
+        icon: radarr.svg
+        href: http://YOUR_MEDIA_SERVER_IP:7878
+        widget:
+          type: radarr
+          url: http://YOUR_MEDIA_SERVER_IP:7878
+          key: "{{HOMEPAGE_VAR_RADARR_KEY}}"
+    - Sonarr:
+        icon: sonarr.svg
+        href: http://YOUR_MEDIA_SERVER_IP:8989
+        widget:
+          type: sonarr
+          url: http://YOUR_MEDIA_SERVER_IP:8989
+          key: "{{HOMEPAGE_VAR_SONARR_KEY}}"
+    - Lidarr:
+        icon: lidarr.svg
+        href: http://YOUR_MEDIA_SERVER_IP:8686
+        description: Music Automation
+        widget:
+          type: lidarr
+          url: http://YOUR_MEDIA_SERVER_IP:8686
+          key: "{{HOMEPAGE_VAR_LIDARR_KEY}}"
+    - Bazarr:
+        icon: bazarr.svg
+        href: http://YOUR_MEDIA_SERVER_IP:6767
+        description: Subtitle Automation
+        widget:
+          type: bazarr
+          url: http://YOUR_MEDIA_SERVER_IP:6767
+          key: "{{HOMEPAGE_VAR_BAZARR_KEY}}"
+
+- Indexers/Downloads:
+    - Slskd:
+        icon: slskd.svg
+        href: http://YOUR_MEDIA_SERVER_IP:5030
+        description: Soulseek Downloader
+        widget:
+          type: slskd
+          url: http://YOUR_MEDIA_SERVER_IP:5030
+          key: "{{HOMEPAGE_VAR_SLSKD_KEY}}"
+    - qBittorrent:
+        icon: qbittorrent.svg
+        href: http://YOUR_MEDIA_SERVER_IP:8080
+        description: Downloads
+        widget:
+          type: qbittorrent
+          url: http://YOUR_MEDIA_SERVER_IP:8080
+          username: "{{HOMEPAGE_VAR_QBITTORRENT_USER}}"
+          password: "{{HOMEPAGE_VAR_QBITTORRENT_PASS}}"
+          enableLeechProgress: true
+    - Jackett:
+        icon: jackett.svg
+        href: http://YOUR_MEDIA_SERVER_IP:9117
+        widget:
+          type: jackett
+          url: http://YOUR_MEDIA_SERVER_IP:9117
+          password: "{{HOMEPAGE_VAR_JACKETT_KEY}}"
+    - Prowlarr:
+        icon: prowlarr.svg
+        href: http://YOUR_MEDIA_SERVER_IP:9696
+        widget:
+          type: prowlarr
+          url: http://YOUR_MEDIA_SERVER_IP:9696
+          key: "{{HOMEPAGE_VAR_PROWLARR_KEY}}"

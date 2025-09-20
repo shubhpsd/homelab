@@ -1,0 +1,70 @@
+# settings.yaml
+
+# -----------------------------------------------------------------
+# General Page Settings
+# -----------------------------------------------------------------
+
+# The main title that appears in the browser tab
+title: Your Homelab Name
+
+# The large text that appears at the top of the page
+header:
+  text: "Welcome to Your Command Center"
+
+# Search bar configuration
+search:
+  provider: "duckduckgo" # You can change this to "google", "bing", etc.
+  target: "_blank"      # This opens search results in a new tab
+
+# Sets the color theme. Options are 'dark' or 'light'.
+theme: dark
+
+# -----------------------------------------------------------------
+# Background Image
+# -----------------------------------------------------------------
+background:
+  # The full URL to the image you want to use
+  image: https://gruvbox-wallpapers.pages.dev/wallpapers/photography/daniel-leone-v7daTKlZzaw.jpg
+
+  # Visual effects to apply to the background image.
+  # This helps make the text and widgets on top easier to read.
+  blur: sm        # How much to blur the image. Options: sm, md, lg, xl...
+  saturate: 50    # Color saturation. Options: 0, 50, 100, 150, 200
+  brightness: 50 # How bright the image is. Options: 0, 50, 75, 90, 100...
+  opacity: 90    # How transparent the image is against the theme color. Options: 0-100
+
+# -----------------------------------------------------------------
+# Layout Configuration
+# This is where you arrange your service groups on the page.
+# -----------------------------------------------------------------
+layout:
+  # The names here MUST exactly match the top-level group names in your services.yaml file.
+  # Group names that contain spaces MUST be enclosed in quotes.
+
+  "Core Services":
+    style: row
+    columns: 3
+
+  "Cloud Storage":
+    style: row
+    columns: 2
+
+  "Networking":
+    style: row
+    columns: 5
+
+  "Media Platform":
+    style: row
+    columns: 4
+
+  "Media Automation":
+    style: row
+    columns: 4
+
+  "Indexers/Downloads":
+    style: row
+    columns: 4
+
+  Connect:
+    style: row
+    columns: 3

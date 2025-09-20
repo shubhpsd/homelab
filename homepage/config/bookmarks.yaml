@@ -1,0 +1,15 @@
+# bookmarks.yaml
+
+- Connect:
+    - Portfolio:
+        - icon: mdi-web
+          href: https://www.yourdomain.com
+          description: Your personal website and blog
+    - GitHub:
+        - icon: mdi-github
+          href: https://github.com/yourusername
+          description: Your code and projects
+    - LinkedIn:
+        - icon: mdi-linkedin
+          href: https://www.linkedin.com/in/yourusername/
+          description: Connect with you professionally
