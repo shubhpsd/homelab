@@ -2,11 +2,22 @@
 
 This directory contains the networking infrastructure for the homelab, including DNS ad-blocking, reverse proxy, secure tunnels, VPN access, and network monitoring. The setup provides both internal network optimization and secure external access to services.
 
-![Pi-hole Dashboard](./pihole-dashboard.png)
-*Pi-hole dashboard showing DNS query blocking and network-wide ad protection.*
+<p align="center">
+<img src="./network-diagram.png" alt="Network Diagram" width="60%" />
+</p>
 
-![Speedtest Tracker](./speedtest.png)
-*Speedtest Tracker monitoring network performance over time.*
+<p align="center">
+<em>Network topology and service interconnections in the homelab infrastructure.</em>
+</p>
+
+<p align="center">
+<img src="./pihole-dashboard.png" alt="Pi-hole Dashboard" width="45%" />
+<img src="./speedtest.png" alt="Speedtest Tracker" width="45%" />
+</p>
+
+<p align="center">
+<em>Pi-hole dashboard showing DNS query blocking and network-wide ad protection.</em> | <em>Speedtest Tracker monitoring network performance over time.</em>
+</p>
 
 ## Services Overview
 
@@ -30,6 +41,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/Proxmo
 ```
 
 **Post-installation configuration:**
+
 1. Access Pi-hole admin at `http://YOUR_PIHOLE_IP/admin`
 2. Configure your router or devices to use Pi-hole as DNS server
 3. Add recommended blocklists (see below)
@@ -44,6 +56,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/Proxmo
 ```
 
 **Setup steps:**
+
 1. Create account at [tailscale.com](https://tailscale.com)
 2. Run `tailscale up` in the container
 3. Authenticate with your Tailscale account
@@ -68,7 +81,7 @@ docker compose up -d
 
 Recommended blocklists for comprehensive ad and tracker blocking:
 
-```
+```sh
 # Core ad blocking
 https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
 
@@ -93,6 +106,7 @@ https://adguardteam.github.io/HostlistsRegistry/assets/filter_27.txt
 ```
 
 **To add blocklists:**
+
 1. Go to Pi-hole Admin → Group Management → Adlists
 2. Add each URL above
 3. Go to Tools → Update Gravity
@@ -101,7 +115,7 @@ https://adguardteam.github.io/HostlistsRegistry/assets/filter_27.txt
 ### Nginx Proxy Manager Setup
 
 1. **Access admin interface:** `http://YOUR_LXC_IP:8181`
-2. **Default credentials:** 
+2. **Default credentials:**
    - Email: `admin@example.com`
    - Password: `changeme`
 3. **Add proxy hosts** for each service you want to expose:
@@ -120,7 +134,7 @@ https://adguardteam.github.io/HostlistsRegistry/assets/filter_27.txt
 
 ### Network Architecture
 
-```
+```sh
 Internet
     ↓
 Cloudflare Tunnel (secure)
@@ -147,6 +161,7 @@ Tailscale (VPN access)
 ## Troubleshooting
 
 ### Pi-hole Issues
+
 ```bash
 # Check Pi-hole status
 pihole status
@@ -159,6 +174,7 @@ sudo service pihole-FTL restart
 ```
 
 ### Tailscale Issues
+
 ```bash
 # Check connection status
 tailscale status
@@ -171,6 +187,7 @@ journalctl -u tailscaled
 ```
 
 ### Docker Issues
+
 ```bash
 # Check container status
 docker compose ps
