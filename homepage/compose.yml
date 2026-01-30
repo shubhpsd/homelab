@@ -1,0 +1,40 @@
+services:
+  glance:
+    container_name: glance
+    image: glanceapp/glance
+    restart: unless-stopped
+    dns:
+      - 192.168.1.102 # Your Pi-hole - resolves *.shubhamprasad.me
+      - 8.8.8.8 # Fallback DNS
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # For disk-monitor extension
+    volumes:
+      - ./config:/app/config
+      - ./assets:/app/assets
+      - /etc/localtime:/etc/localtime:ro
+      # Mount external storage for monitoring (macOS - SMB share)
+      # - "/Volumes/Docs:/mnt/docs:ro"
+      # For LXC, change the above line to:
+      - /mnt/hdd500:/mnt/hdd500:ro
+      # Optionally, also mount docker socket if you want to use the docker containers widget
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - 8080:8080
+    env_file: ./config/.env
+
+  disk-monitor:
+    container_name: glance-disk-monitor
+    labels:
+      - wud.watch=false
+      - com.centurylinklabs.watchtower.enable=false
+    image: python:3.11-alpine
+    restart: unless-stopped
+    ports:
+      - "8888:8888" # ← Add this line
+    volumes:
+      - ./disk-monitor.py:/app/disk-monitor.py:ro
+      # Mount storage volumes to monitor (Linux server paths)
+      - /mnt/hdd500:/mnt/hdd500:ro
+    command: python3 /app/disk-monitor.py
+    networks:
+      - default

@@ -1,123 +1,187 @@
-# Homepage Dashboard
+# Glance Dashboard
 
-Homepage is a modern, aesthitically pleasing, highly customizable application dashboard with integrations for over 100 services.
+Switched from Homepage to [Glance](https://github.com/glanceapp/glance) and it's been a solid upgrade. Fast, clean, and way more customizable with the custom-api widgets.
 
-![Homepage Dashboard](homepage-dashboard.png)
+![Home Page](home-page.png)
+_Home page with media widgets, RSS feeds, and monitoring_
 
-## External Access
+![Server Page](server-page.png)
+_Server page with system stats and storage monitoring_
 
-The following services are configured with public access through Cloudflare Tunnels and Nginx Proxy Manager (see [networking folder](../networking/) for setup):
+## Why Glance?
 
-- **<https://dash.yourdomain.com>** → Homepage Dashboard
-- **<https://jellyfin.yourdomain.com>** → Jellyfin Media Server
-- **<https://jellyseerr.yourdomain.com>** → Media Request Management
-- **<https://music.yourdomain.com>** → Navidrome Music Streaming
-- **<https://nextcloud.yourdomain.com>** → Personal Cloud Storage
-- **<https://photos.yourdomain.com>** → Immich Photo Management
-- **<https://speedtest.yourdomain.com>** → Network Speed Testing
+- **Performance** - Loads instantly with minimal overhead
+- **Customization** - Custom-api widgets let you build pretty much anything
+- **Clean UI** - Looks good out of the box, no wrestling with CSS
+- **Theme switching** - Light/dark mode works properly with icon handling
 
-All other services (Proxmox, *arr stack, download clients, etc.) remain internal-only for security.
+## Current Setup
 
-## Setup Instructions
+### Home Page
 
-1. **Copy environment file**:
+- **Weather & Calendar** - Local weather with hourly forecast and calendar widget
+- **Air Quality Index** - Real-time AQI data with pollutant breakdown (PM2.5, ozone, humidity, pressure)
+- **Search bar** - DuckDuckGo with custom bangs for YouTube, Reddit, GitHub
+- **Jellyfin Next Up** - Continue watching carousel with thumbnails and progress bars
+- **YouTube feed** - Latest videos from subscribed channels
+- **RSS feeds** - Reddit (technology, homelab, selfhosted, unixporn, etc.), Hacker News, Lobsters
+- **Pi-hole DNS stats** - Query stats, top domains, blocking percentage
+- **F1 Next Race** - Upcoming Formula 1 race details with countdown
+- **Indian Markets** - NIFTY 50, SENSEX, and major stock prices
+
+### Server Page
+
+- **Storage monitor** - Custom Python API showing all mounted drives with usage bars
+- **Internet speed** - Live speedtest stats with percentage changes from average
+- **qBittorrent stats** - Download speeds, active torrents, seeding/leeching counts with progress bars
+- **Immich stats** - Photo/video count and total storage usage
+- **Minecraft server** - Server status, player count, and MOTD
+- **Tailscale devices** - All devices on tailnet with online status
+- **Time progress bars** - Day/month/year progress tracking (kinda cool, kinda depressing)
+- **Service monitors**:
+  - Frontend: Jellyfin, Immich, Nextcloud, Jellyseerr, Navidrome, Home Assistant, BentoPDF
+  - Backend: Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Jackett, qBittorrent, Slskd, Youtube DL
+  - System: Proxmox, Nginx Proxy Manager, Beszel, WUD, Speedtest
+- **Proxmox stats** - VM/LXC counts and status across cluster nodes
+- **Beszel monitoring** - CPU, RAM, disk, temps for all servers in the homelab
+- **WUD (What's Up Docker)** - Container update notifications
+
+## Installation
+
+1. **Deploy Glance container:**
 
    ```bash
-   cp docker.env.example docker.env
+   docker run -d \
+     --name glance \
+     -p 8080:8080 \
+     -v /docker/glance/config:/app/config \
+     -v /docker/glance/assets:/app/assets \
+     glanceapp/glance
    ```
 
-2. **Edit environment variables** with your API keys and credentials:
+   Or use the provided `compose.yml`:
 
    ```bash
-   nano docker.env
+   cd homepage/
+   docker compose up -d
    ```
 
-3. **Configure IP addresses** in `config/services.yaml`:
-   - Replace `YOUR_PROXMOX_IP` with your Proxmox server IP
-   - Replace `YOUR_MEDIA_SERVER_IP` with your media VM/container IP  
-   - Replace `YOUR_BESZEL_IP` with your monitoring container IP
-   - Replace `YOUR_PIHOLE_IP` with your Pi-hole container IP
-   - Replace `YOUR_NPM_IP` with your Nginx Proxy Manager IP
-   - Replace `YOUR_SAMBA_IP` with your Samba file server IP
+2. **Configure your widgets:**
 
-4. **Customize personal settings**:
-   - Update `config/settings.yaml` with your homelab name and preferences
-   - Update `config/widgets.yaml` with your location coordinates
-   - Update `config/bookmarks.yaml` with your personal links
-
-5. **Deploy with Docker Compose**:
+   Copy the configuration files:
 
    ```bash
-   docker-compose up -d
+   cp glance.yml /docker/glance/config/
+   cp home.yml /docker/glance/config/
+   cp server.yml /docker/glance/config/
+   cp disk-monitor.py /docker/glance/
    ```
 
-6. **Access the dashboard** at `http://localhost:3000` or your configured domain
+3. **Set up environment variables:**
 
-## Configuration Files
+   Create `/docker/glance/config/.env` using `.env.example` as a template:
 
-- **`compose.yaml`** - Docker Compose configuration
-- **`docker.env`** - Environment variables and API keys
-- **`config/services.yaml`** - Service definitions and widgets
-- **`config/settings.yaml`** - Dashboard theme and layout settings
-- **`config/widgets.yaml`** - System widgets configuration
-- **`config/bookmarks.yaml`** - Bookmark definitions
-- **`config/docker.yaml`** - Docker integration settings
-- **`config/proxmox.yaml`** - Proxmox monitoring configuration
+   ```bash
+   cp .env.example /docker/glance/config/.env
+   # Edit the .env file with your actual API keys and credentials
+   nano /docker/glance/config/.env
+   ```
 
-## Customization
+4. **Deploy the disk monitor:**
 
-### Adding New Services
+   The disk monitor is a simple Python API that reads disk usage and returns styled HTML:
 
-Edit `config/services.yaml` to add new services to the dashboard. Follow the existing format and check [Homepage documentation](https://gethomepage.dev/configs/services/) for widget types.
+   ```bash
+   docker run -d \
+     --name glance-disk-monitor \
+     -p 8888:8888 \
+     -v /:/host:ro \
+     -v /docker/glance-disk-monitor:/app \
+     python:3.11-slim \
+     sh -c "pip install flask && python /app/disk-monitor.py"
+   ```
 
-### Changing Theme
+   Or it's already included in the `compose.yml`.
 
-Modify `config/settings.yaml` to change:
+5. **Restart and verify:**
 
-- Background image and effects
-- Color theme (dark/light)
-- Layout and columns
-- Page title and header
+   ```bash
+   docker restart glance
+   # Check logs
+   docker logs -f glance
+   ```
 
-### Widget Configuration
+   Access the dashboard at `http://your-server-ip:8080`
 
-Update `config/widgets.yaml` to customize:
+## Custom Storage Monitor
 
-- System resource monitoring
-- Weather widget location
-- Custom logo
+Custom Python API that reads disk usage from the host filesystem and returns styled HTML. Shows all mounted drives with proper progress bars and color-coded status (green < 60%, yellow < 80%, red >= 80%).
 
-## API Keys Required
+Located in `disk-monitor.py` - modify the `paths` array to add/remove drives you want to monitor.
 
-You'll need to obtain API keys for the following services:
+## Features
 
-- Radarr, Sonarr, Lidarr, Bazarr (Settings → General → API Key)
-- Jellyfin (Dashboard → API Keys)
-- Jellyseerr (Settings → General → API Key)
-- Tailscale (Admin Console → Settings → Keys)
-- Immich (Account Settings → API Keys)
-- Nextcloud (Personal Settings → Security → App passwords)
-- Cloudflare (My Profile → API Tokens)
+### Icon Theme Switching
 
-## Notes
+Icons use the `auto-invert` prefix with dark versions from the selfhst CDN:
 
-- All sensitive credentials are stored in environment variables
-- The dashboard uses read-only access where possible
-- Docker socket is mounted for container monitoring
-- External storage is mounted read-only for disk usage monitoring
+```yaml
+icon: auto-invert https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/beszel-dark.png
+```
+
+This makes them automatically invert to white when switching to dark theme. No more invisible black icons on dark backgrounds.
+
+## Configuration Structure
+
+```bash
+homepage/
+├── compose.yml             # Docker Compose configuration
+├── glance.yml              # Main Glance config (includes home.yml & server.yml)
+├── home.yml                # Home page widgets configuration
+├── server.yml              # Server page widgets configuration
+├── disk-monitor.py         # Python script for storage monitoring
+├── .env.example            # Environment variables template
+├── home-page.png           # Screenshot of home page
+├── server-page.png         # Screenshot of server page
+└── old/                    # Archived Homepage configs
+    ├── compose.yaml
+    ├── docker.env.example
+    ├── homepage-dashboard.png
+    └── config/
+```
+
+## API Keys & Authentication
+
+All sensitive credentials are stored in the `.env` file. You'll need API keys from:
+
+- **Jellyfin** - Settings > API Keys
+- **Immich** - Account Settings > API Keys
+- **Tailscale** - [Settings > Keys](https://login.tailscale.com/admin/settings/keys) (expires every 90 days)
+- **Proxmox** - Datacenter > Permissions > API Tokens
+- **Beszel** - Generate admin API token
+- **Speedtest Tracker** - Settings > API
+- **\*arr apps** - Settings > General > API Key
+- **Pi-hole** - Settings > API (v6 uses password instead of token)
+- **WAQI (Air Quality)** - [Get free token](https://aqicn.org/data-platform/token/)
 
 ## Troubleshooting
 
-### Widget Not Loading
+**Widgets not loading?**
 
-1. Check API key is correct in `docker.env`
-2. Verify service URL is accessible from container
-3. Check Homepage logs: `docker logs homepage`
+- Check Docker logs: `docker logs glance`
+- Verify `.env` file has correct API keys
+- Make sure DNS settings point to Pi-hole (192.168.1.102)
 
-### Service Not Responding
+**Icons not showing?**
 
-1. Verify service is running and accessible
-2. Check network connectivity between containers
-3. Validate API endpoint URLs in `services.yaml`
+- Verify CDN URLs are accessible
+- Check if you're using `auto-invert` prefix for dark theme icons
 
-For more configuration options, see the [official Homepage documentation](https://gethomepage.dev/).
+**Disk monitor not working?**
+
+- Check disk-monitor container logs: `docker logs glance-disk-monitor`
+- Verify volume mounts match your actual storage paths
+
+---
+
+**Previous setup:** Old Homepage dashboard configs are archived in the `old/` directory for reference.
